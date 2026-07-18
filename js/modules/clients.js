@@ -28,3 +28,62 @@ function rClV(C,id){
   document.getElementById('ptitle').textContent=c.nom;
   C.innerHTML='<button class="b bs mb-4" onclick="nav(\'clients\')"><i class="fas fa-arrow-left"></i> Retour</button><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="cd lg:col-span-1"><div class="text-center mb-4"><div class="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-3 text-2xl font-bold text-accent">'+(c.nom||'?')[0].toUpperCase()+'</div><h2 class="text-xl font-bold">'+c.nom+'</h2><div class="text-muted text-sm">'+(c.entreprise||'')+'</div></div><div class="space-y-3 text-sm"><div class="flex gap-3"><i class="fas fa-envelope text-muted w-5 text-center"></i>'+(c.email||'-')+'</div><div class="flex gap-3"><i class="fas fa-phone text-muted w-5 text-center"></i>'+(c.tel||'-')+'</div><div class="flex gap-3"><i class="fas fa-map-marker-alt text-muted w-5 text-center"></i>'+(c.adresse||'-')+'</div></div>'+(c.notes?'<div class="mt-4 p-3 bg-surface2 rounded-lg text-sm text-muted">'+c.notes+'</div>':'')+'<div class="flex gap-2 mt-4"><button class="b bs sm flex-1" onclick="rClF(\''+id+'\')"><i class="fas fa-pen"></i> Modifier</button><button class="b bd sm" onclick="cfm(\'Supprimer ?\',\'\',function(){sd(K.cl,gd(K.cl).filter(x=>x.id!==\''+id+'\'));toast(\'Supprime\',\'success\');render()})"><i class="fas fa-trash"></i></button></div></div><div class="lg:col-span-2 space-y-6"><div class="cd"><h3 class="font-semibold mb-3">Devis ('+dv.length+')</h3>'+(dv.length?'<table><thead><tr><th>Numero</th><th>Date</th><th>Montant</th><th>Statut</th></tr></thead><tbody>'+dv.map(d=>'<tr class="cursor-pointer" onclick="nav(\'devis\',{id:\''+d.id+'\'})"><td class="font-mono text-accent text-xs">'+d.numero+'</td><td class="text-muted text-sm">'+fd(d.date)+'</td><td>'+fm(d.totalTTC,d.devise)+'</td><td>'+bsg(d.statut,'devis')+'</td></tr>').join('')+'</tbody></table>':'<p class="text-muted text-sm">Aucun</p>')+'</div><div class="cd"><h3 class="font-semibold mb-3">Factures ('+fc.length+')</h3>'+(fc.length?'<table><thead><tr><th>Numero</th><th>Date</th><th>Montant</th><th>Statut</th></tr></thead><tbody>'+fc.map(f=>'<tr class="cursor-pointer" onclick="nav(\'factures\',{id:\''+f.id+'\'})"><td class="font-mono text-accent text-xs">'+f.numero+'</td><td class="text-muted text-sm">'+fd(f.date)+'</td><td>'+fm(f.totalTTC,f.devise)+'</td><td>'+bsg(f.statut,'facture')+'</td></tr>').join('')+'</tbody></table>':'<p class="text-muted text-sm">Aucune</p>')+'</div><div class="cd"><h3 class="font-semibold mb-3">Projets ('+pj.length+')</h3>'+(pj.length?'<div class="space-y-2">'+pj.map(p=>{const s=pjStats(p);return'<div class="flex items-center justify-between p-3 bg-surface2 rounded-lg cursor-pointer" onclick="nav(\'projets\',{id:\''+p.id+'\'})"><div><div class="text-sm font-medium">'+p.nom+'</div><div class="text-xs text-muted">'+s.t+' etape(s)</div></div><div class="w-24 bg-surface rounded-full h-2"><div class="bg-accent h-2 rounded-full" style="width:'+s.pc+'%"></div></div></div>'}).join('')+'</div>':'<p class="text-muted text-sm">Aucun</p>')+'</div></div></div>';
 }
+// ===== DÉBUT AJOUT =====
+
+// --- Export CSV de la liste des clients ---
+function exporterClientsCSV() {
+  var clients = getStored(STORAGE_KEYS.clients) || [];
+  if (clients.length === 0) {
+    toast('Aucun client à exporter', 'error');
+    return;
+  }
+
+  var headers = ['Nom', 'Prénom', 'Entreprise', 'Email', 'Téléphone', 'Adresse', 'Code postal', 'Ville', 'Pays', 'Notes', 'Date création'];
+  var rows = clients.map(function(c) {
+    return [
+      csvEscape(c.nom || ''),
+      csvEscape(c.prenom || ''),
+      csvEscape(c.entreprise || ''),
+      csvEscape(c.email || ''),
+      csvEscape(c.telephone || ''),
+      csvEscape(c.adresse || ''),
+      csvEscape(c.code_postal || ''),
+      csvEscape(c.ville || ''),
+      csvEscape(c.pays || ''),
+      csvEscape(c.notes || ''),
+      csvEscape(c.date_creation || '')
+    ].join(';');
+  });
+
+  var csv = '\uFEFF' + headers.join(';') + '\n' + rows.join('\n');
+  telechargerFichier(csv, 'clients_' + getDateFichier() + '.csv', 'text/csv;charset=utf-8');
+  toast(clients.length + ' clients exportés en CSV', 'success');
+}
+
+// --- Helper : échapper un champ CSV ---
+function csvEscape(champ) {
+  if (champ.indexOf(';') !== -1 || champ.indexOf('"') !== -1 || champ.indexOf('\n') !== -1) {
+    return '"' + champ.replace(/"/g, '""') + '"';
+  }
+  return champ;
+}
+
+// --- Helper : télécharger un fichier ---
+function telechargerFichier(contenu, nomFichier, mimeType) {
+  var blob = new Blob([contenu], { type: mimeType });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = nomFichier;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// --- Helper : date pour nom de fichier ---
+function getDateFichier() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// ===== FIN AJOUT =====
