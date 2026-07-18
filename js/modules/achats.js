@@ -17,3 +17,17 @@ function rAcF(id){
     sd(K.ac,a);closeM();render();
   };
 }
+// ===== DÉBUT AJOUT =====
+
+// --- Assurer que les lignes d'achat ont les champs remise/tva ---
+function normaliserLignesAchat(achat) {
+  if (!achat.lignes) achat.lignes = [];
+  achat.lignes.forEach(function(l) {
+    if (l.remise_type === undefined) l.remise_type = '';
+    if (l.remise_valeur === undefined) l.remise_valeur = '';
+    if (l.taux_tva === undefined) l.taux_tva = 'standard';
+  });
+  return achat;
+}
+
+// ===== FIN AJOUT =====
