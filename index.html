@@ -17,6 +17,17 @@
 if(window.tailwind){tailwind.config={theme:{extend:{colors:{bg:'rgb(var(--c-bg) / <alpha-value>)',surface:'rgb(var(--c-surface) / <alpha-value>)',surface2:'rgb(var(--c-surface2) / <alpha-value>)',border:'rgb(var(--c-border) / <alpha-value>)',fg:'rgb(var(--c-fg) / <alpha-value>)',muted:'rgb(var(--c-muted) / <alpha-value>)',accent:'rgb(var(--c-accent) / <alpha-value>)',success:'rgb(var(--c-success) / <alpha-value>)',danger:'rgb(var(--c-danger) / <alpha-value>)',info:'rgb(var(--c-info) / <alpha-value>)',warning:'rgb(var(--c-warning) / <alpha-value>)'},fontFamily:{sans:['Space Grotesk','sans-serif']}}}}}else{console.warn('Tailwind CDN non charge - verifiez la connexion internet ou un bloqueur de script.')}
 </script>
 <link rel="stylesheet" href="css/styles.css">
+  <!-- ===== DÉBUT AJOUT : Recherche globale ===== -->
+<div id="gs-container" style="position:relative;max-width:400px;margin-left:auto">
+  <div style="position:relative">
+    <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none">🔍</span>
+    <input type="text" id="gs-input" placeholder="Rechercher partout... (Ctrl+K)" 
+           style="width:100%;padding:8px 12px 8px 34px;border:1px solid var(--border);border-radius:6px;background:var(--input-bg);color:var(--text);font-size:0.9em;outline:none"
+           autocomplete="off">
+  </div>
+  <div id="gs-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card-bg);border:1px solid var(--border);border-radius:0 0 6px 6px;box-shadow:0 8px 24px rgba(0,0,0,0.15);max-height:400px;overflow-y:auto;z-index:1000"></div>
+</div>
+<!-- ===== FIN AJOUT ===== -->
 </head>
 <body>
 
@@ -70,11 +81,19 @@ if(window.tailwind){tailwind.config={theme:{extend:{colors:{bg:'rgb(var(--c-bg) 
     <div id="mbod" class="p-6"></div>
   </div>
 </div>
-
+<!-- ===== DÉBUT AJOUT : Zones de totaux étendues ===== -->
+<div id="details-tva" style="font-size:0.85em;margin-bottom:8px"></div>
+<div style="display:flex;justify-content:flex-end;gap:24px;flex-wrap:wrap">
+  <div>Total HT : <strong id="total-ht">0.00</strong></div>
+  <div>TVA : <strong id="total-tva">0.00</strong></div>
+  <div style="font-size:1.1em">Total TTC : <strong id="total-ttc">0.00</strong></div>
+</div>
+<!-- ===== FIN AJOUT ===== -->
 <div id="toasts" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
 <!-- Core (load first: data layer, UI primitives, router) -->
 <script src="js/core/utils.js"></script>
+<script src="js/core/global-search.js"></script>
 <script src="js/core/ui.js"></script>
 <script src="js/core/filesystem.js"></script>
 <script src="js/core/router.js"></script>
