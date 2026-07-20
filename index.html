@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<script>try{if(localStorage.getItem('crm_theme')==='light')document.documentElement.classList.add('light')}catch(e){}</script>
+<head>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OnboardCRM</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- QR Code encoder, vendored locally (no external dependency). Source: qrcode-generator by Kazuhiko Arase, MIT license. -->
+<script src="js/lib/qrcode.min.js"></script>
+<script>
+if(window.tailwind){tailwind.config={theme:{extend:{colors:{bg:'rgb(var(--c-bg) / <alpha-value>)',surface:'rgb(var(--c-surface) / <alpha-value>)',surface2:'rgb(var(--c-surface2) / <alpha-value>)',border:'rgb(var(--c-border) / <alpha-value>)',fg:'rgb(var(--c-fg) / <alpha-value>)',muted:'rgb(var(--c-muted) / <alpha-value>)',accent:'rgb(var(--c-accent) / <alpha-value>)',success:'rgb(var(--c-success) / <alpha-value>)',danger:'rgb(var(--c-danger) / <alpha-value>)',info:'rgb(var(--c-info) / <alpha-value>)',warning:'rgb(var(--c-warning) / <alpha-value>)'},fontFamily:{sans:['Space Grotesk','sans-serif']}}}}}else{console.warn('Tailwind CDN non charge - verifiez la connexion internet ou un bloqueur de script.')}
+</script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<body>
+
+<div id="app">
+  <div id="sov" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden"></div>
+  <aside id="sb" class="fixed left-0 top-0 h-full w-64 bg-surface border-r border-border z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
+    <div class="px-6 py-6 border-b border-border"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center"><i class="fas fa-bolt text-accent text-sm"></i></div><div><div class="font-bold text-fg text-sm tracking-wide">OnboardCRM</div><div class="text-[.65rem] text-muted">Gestion onboarding</div></div></div></div>
+    <nav id="nav" class="flex-1 py-4 overflow-y-auto">
+      <div class="px-4 mb-2 text-[.65rem] uppercase tracking-widest text-muted/50 font-semibold">Principal</div>
+      <div class="ni on" data-p="dashboard"><i class="fas fa-gauge-high w-5 text-center"></i>Tableau de bord</div>
+      <div class="ni" data-p="clients"><i class="fas fa-users w-5 text-center"></i>Clients</div>
+      <div class="px-4 mt-4 mb-2 text-[.65rem] uppercase tracking-widest text-muted/50 font-semibold">Commercial</div>
+      <div class="ni" data-p="devis"><i class="fas fa-file-invoice w-5 text-center"></i>Devis</div>
+      <div class="ni" data-p="factures"><i class="fas fa-file-invoice-dollar w-5 text-center"></i>Factures</div>
+
+   <div class="px-4 mt-4 mb-2 text-[.65rem] uppercase tracking-widest text-muted/50 font-semibold">Projets</div>
+   <div class="ni" data-p="projets"><i class="fas fa-diagram-project w-5 text-center"></i>Projets</div>
+   <div class="ni" data-p="signature"><i class="fas fa-signature w-5 text-center"></i>Signatures</div>
+
+
+      <div class="px-4 mt-4 mb-2 text-[.65rem] uppercase tracking-widest text-muted/50 font-semibold">Finances</div>
+      <div class="ni" data-p="achats"><i class="fas fa-cart-shopping w-5 text-center"></i>Achats</div>
+      <div class="ni" data-p="bilan"><i class="fas fa-chart-pie w-5 text-center"></i>Bilan annuel</div>
+      <div class="px-4 mt-4 mb-2 text-[.65rem] uppercase tracking-widest text-muted/50 font-semibold">Systeme</div>
+      <div class="ni" data-p="parametres"><i class="fas fa-cog w-5 text-center"></i>Parametres</div>
+    </nav>
+    <div class="px-6 py-4 border-t border-border text-[.7rem] text-muted"><div>Stockage local</div><div id="ssize" class="mt-1"></div></div>
+  </aside>
+  <div class="lg:ml-64 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-20 bg-bg/80 backdrop-blur-md border-b border-border px-4 md:px-6 py-3 flex items-center gap-4">
+      <button id="mbtn" class="lg:hidden text-muted hover:text-fg p-1"><i class="fas fa-bars text-lg"></i></button>
+      <h1 id="ptitle" class="text-lg font-semibold hidden sm:block"></h1>
+      <div class="gsw hidden md:block">
+        <div class="relative">
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm"></i>
+          <input id="gsinput" class="ip pl-9" placeholder="Recherche globale (clients, devis, factures...)" autocomplete="off">
+        </div>
+        <div id="gsres" class="gsr" style="display:none"></div>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <span id="sind" class="text-xs text-muted hidden md:block"></span>
+        <button id="thtg" class="thsw" title="Basculer theme clair/sombre"><i class="fas fa-sun"></i><span class="thsw-track"><span class="thsw-thumb"></span></span><i class="fas fa-moon"></i></button>
+        <button class="b bs sm" onclick="FS.save()" title="Sauvegarder vers fichier JSON"><i class="fas fa-save"></i></button>
+        <button class="b bs sm" onclick="FS.load()" title="Charger depuis fichier JSON"><i class="fas fa-folder-open"></i></button>
+      </div>
+    </header>
+    <div id="ct" class="flex-1 p-4 md:p-6"></div>
+  </div>
+</div>
+
+<div id="portal" style="display:none"></div>
+
+<div id="mover" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none">
+  <div id="mbox" class="bg-surface border border-border rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto ma">
+    <div class="px-6 py-4 border-b border-border flex items-center justify-between"><h2 id="mtit" class="text-lg font-semibold"></h2><button id="mclose" class="text-muted hover:text-fg"><i class="fas fa-times"></i></button></div>
+    <div id="mbod" class="p-6"></div>
+  </div>
+</div>
+
+<div id="toasts" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- Core (load first: data layer, UI primitives, router) -->
+<script src="js/core/utils.js"></script>
+<script src="js/core/ui.js"></script>
+<script src="js/core/filesystem.js"></script>
+<script src="js/core/router.js"></script>
+
+<!-- Feature modules -->
+<script src="js/modules/qrfacture.js"></script>
+<script src="js/modules/csvexport.js"></script>
+<script src="js/modules/dashboard.js"></script>
+<script src="js/modules/clients.js"></script>
+<script src="js/modules/document-lines.js"></script>
+<script src="js/modules/devis.js"></script>
+<script src="js/modules/factures.js"></script>
+<script src="js/modules/projets.js"></script>
+<script src="js/modules/signature.js"></script>
+
+
+<script src="js/modules/achats.js"></script>
+<script src="js/modules/bilan.js"></script>
+<script src="js/modules/portal.js"></script>
+<script src="js/modules/pdf.js"></script>
+<script src="js/modules/parametres.js"></script>
+
+<!-- App bootstrap (load last: wires events, triggers initial render) -->
+<script src="js/app.js"></script>
+</body>
+</html>
